@@ -244,102 +244,103 @@ def recreate_stat_file():
 
 
 def send_anonymous_stats(start_time, debug=False):
-    """
-    Send anonymous usage statistics
-
-    Example use:
-        current_stat = return_stat_file_dict(csv_file)
-        add_update_csv(csv_file, 'stat', current_stat['stat'] + 5)
-    """
-    if debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-
-    try:
-        client = InfluxDBClient(STATS_HOST, STATS_PORT, STATS_USER, STATS_PASSWORD, STATS_DATABASE)
-        # Prepare stats before sending
-        uptime = (time.time() - start_time) / 86400.0  # Days
-        add_update_csv(STATS_CSV, 'uptime', uptime)
-
-        version_num = db_retrieve_table_daemon(
-            AlembicVersion, entry='first')
-        version_send = version_num.version_num if version_num else 'None'
-        add_update_csv(STATS_CSV, 'alembic_version', version_send)
-
-        outputs = db_retrieve_table_daemon(Output)
-        add_update_csv(STATS_CSV, 'num_relays', get_count(outputs))
-
-        inputs = db_retrieve_table_daemon(Input)
-        add_update_csv(STATS_CSV, 'num_sensors', get_count(inputs))
-        add_update_csv(STATS_CSV, 'num_sensors_active',
-                       get_count(inputs.filter(Input.is_activated == True)))
-
-        conditionals = db_retrieve_table_daemon(Conditional)
-        add_update_csv(STATS_CSV, 'num_conditionals', get_count(conditionals))
-        add_update_csv(STATS_CSV, 'num_conditionals_active',
-                       get_count(conditionals.filter(Conditional.is_activated == True)))
-
-        pids = db_retrieve_table_daemon(PID)
-        add_update_csv(STATS_CSV, 'num_pids', get_count(pids))
-        add_update_csv(STATS_CSV, 'num_pids_active',
-                       get_count(pids.filter(PID.is_activated == True)))
-
-        triggers = db_retrieve_table_daemon(Trigger)
-        add_update_csv(STATS_CSV, 'num_triggers', get_count(triggers))
-        add_update_csv(STATS_CSV, 'num_triggers_active',
-                       get_count(triggers.filter(Trigger.is_activated == True)))
-
-        lcds = db_retrieve_table_daemon(LCD)
-        add_update_csv(STATS_CSV, 'num_lcds', get_count(lcds))
-        add_update_csv(STATS_CSV, 'num_lcds_active',
-                       get_count(lcds.filter(LCD.is_activated == True)))
-
-        math = db_retrieve_table_daemon(Math)
-        add_update_csv(STATS_CSV, 'num_maths', get_count(math))
-        add_update_csv(STATS_CSV, 'num_maths_active',
-                       get_count(math.filter(Math.is_activated == True)))
-
-        methods = db_retrieve_table_daemon(Method)
-        add_update_csv(STATS_CSV, 'num_methods',
-                       get_count(methods))
-        add_update_csv(STATS_CSV, 'num_methods_in_pid',
-                       get_count(pids.filter(PID.setpoint_tracking_type == 'method')))
-        add_update_csv(STATS_CSV, 'num_setpoint_meas_in_pid',
-                       get_count(pids.filter(PID.setpoint_tracking_type == 'input-math')))
-
-        country = geocoder.ip('me').country
-        if not country:
-            country = 'None'
-        add_update_csv(STATS_CSV, 'country', country)
-        add_update_csv(STATS_CSV, 'ram_use_mb',
-                       resource.getrusage(
-                           resource.RUSAGE_SELF).ru_maxrss / float(1000))
-
-        add_update_csv(STATS_CSV, 'Mycodo_revision', MYCODO_VERSION)
-
-        # Combine stats into list of dictionaries
-        new_stats_dict = return_stat_file_dict(STATS_CSV)
-        formatted_stat_dict = []
-        for each_key, each_value in new_stats_dict.items():
-            if each_key != 'stat':  # Do not send header row
-                formatted_stat_dict = add_stat_dict(formatted_stat_dict,
-                                                    new_stats_dict['id'],
-                                                    each_key,
-                                                    each_value)
-
-        # Send stats to secure, remote influxdb server (only write permission)
-        client.write_points(formatted_stat_dict)
-        logger.debug("Sent anonymous usage statistics")
-        return 0
-    except requests.ConnectionError:
-        logger.debug("Could not send anonymous usage statistics: Connection "
-                     "timed out (expected if there's no internet or the "
-                     "server is down)")
-    except InfluxDBServerError as except_msg:
-        logger.error("Statistics: InfluxDB server error: {}".format(except_msg['error']))
-    except Exception as except_msg:
-        logger.exception(
-            "Could not send anonymous usage statistics: {err}".format(
-                err=except_msg))
-    return 1
+    pass
+#     """
+#     Send anonymous usage statistics
+#
+#     Example use:
+#         current_stat = return_stat_file_dict(csv_file)
+#         add_update_csv(csv_file, 'stat', current_stat['stat'] + 5)
+#     """
+#     if debug:
+#         logger.setLevel(logging.DEBUG)
+#     else:
+#         logger.setLevel(logging.INFO)
+#
+#     try:
+#         client = InfluxDBClient(STATS_HOST, STATS_PORT, STATS_USER, STATS_PASSWORD, STATS_DATABASE)
+#         # Prepare stats before sending
+#         uptime = (time.time() - start_time) / 86400.0  # Days
+#         add_update_csv(STATS_CSV, 'uptime', uptime)
+#
+#         version_num = db_retrieve_table_daemon(
+#             AlembicVersion, entry='first')
+#         version_send = version_num.version_num if version_num else 'None'
+#         add_update_csv(STATS_CSV, 'alembic_version', version_send)
+#
+#         outputs = db_retrieve_table_daemon(Output)
+#         add_update_csv(STATS_CSV, 'num_relays', get_count(outputs))
+#
+#         inputs = db_retrieve_table_daemon(Input)
+#         add_update_csv(STATS_CSV, 'num_sensors', get_count(inputs))
+#         add_update_csv(STATS_CSV, 'num_sensors_active',
+#                        get_count(inputs.filter(Input.is_activated == True)))
+#
+#         conditionals = db_retrieve_table_daemon(Conditional)
+#         add_update_csv(STATS_CSV, 'num_conditionals', get_count(conditionals))
+#         add_update_csv(STATS_CSV, 'num_conditionals_active',
+#                        get_count(conditionals.filter(Conditional.is_activated == True)))
+#
+#         pids = db_retrieve_table_daemon(PID)
+#         add_update_csv(STATS_CSV, 'num_pids', get_count(pids))
+#         add_update_csv(STATS_CSV, 'num_pids_active',
+#                        get_count(pids.filter(PID.is_activated == True)))
+#
+#         triggers = db_retrieve_table_daemon(Trigger)
+#         add_update_csv(STATS_CSV, 'num_triggers', get_count(triggers))
+#         add_update_csv(STATS_CSV, 'num_triggers_active',
+#                        get_count(triggers.filter(Trigger.is_activated == True)))
+#
+#         lcds = db_retrieve_table_daemon(LCD)
+#         add_update_csv(STATS_CSV, 'num_lcds', get_count(lcds))
+#         add_update_csv(STATS_CSV, 'num_lcds_active',
+#                        get_count(lcds.filter(LCD.is_activated == True)))
+#
+#         math = db_retrieve_table_daemon(Math)
+#         add_update_csv(STATS_CSV, 'num_maths', get_count(math))
+#         add_update_csv(STATS_CSV, 'num_maths_active',
+#                        get_count(math.filter(Math.is_activated == True)))
+#
+#         methods = db_retrieve_table_daemon(Method)
+#         add_update_csv(STATS_CSV, 'num_methods',
+#                        get_count(methods))
+#         add_update_csv(STATS_CSV, 'num_methods_in_pid',
+#                        get_count(pids.filter(PID.setpoint_tracking_type == 'method')))
+#         add_update_csv(STATS_CSV, 'num_setpoint_meas_in_pid',
+#                        get_count(pids.filter(PID.setpoint_tracking_type == 'input-math')))
+#
+#         country = geocoder.ip('me').country
+#         if not country:
+#             country = 'None'
+#         add_update_csv(STATS_CSV, 'country', country)
+#         add_update_csv(STATS_CSV, 'ram_use_mb',
+#                        resource.getrusage(
+#                            resource.RUSAGE_SELF).ru_maxrss / float(1000))
+#
+#         add_update_csv(STATS_CSV, 'Mycodo_revision', MYCODO_VERSION)
+#
+#         # Combine stats into list of dictionaries
+#         new_stats_dict = return_stat_file_dict(STATS_CSV)
+#         formatted_stat_dict = []
+#         for each_key, each_value in new_stats_dict.items():
+#             if each_key != 'stat':  # Do not send header row
+#                 formatted_stat_dict = add_stat_dict(formatted_stat_dict,
+#                                                     new_stats_dict['id'],
+#                                                     each_key,
+#                                                     each_value)
+#
+#         # Send stats to secure, remote influxdb server (only write permission)
+#         client.write_points(formatted_stat_dict)
+#         logger.debug("Sent anonymous usage statistics")
+#         return 0
+#     except requests.ConnectionError:
+#         logger.debug("Could not send anonymous usage statistics: Connection "
+#                      "timed out (expected if there's no internet or the "
+#                      "server is down)")
+#     except InfluxDBServerError as except_msg:
+#         logger.error("Statistics: InfluxDB server error: {}".format(except_msg['error']))
+#     except Exception as except_msg:
+#         logger.exception(
+#             "Could not send anonymous usage statistics: {err}".format(
+#                 err=except_msg))
+#     return 1
