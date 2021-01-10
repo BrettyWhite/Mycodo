@@ -31,7 +31,6 @@ import traceback
 import Pyro5.errors
 import requests
 from Pyro5.api import Proxy
-from influxdb import InfluxDBClient
 
 sys.path.append(os.path.abspath(os.path.join(os.path.realpath(__file__), '../..')))
 
@@ -40,13 +39,16 @@ from mycodo.config import INFLUXDB_HOST
 from mycodo.config import INFLUXDB_PASSWORD
 from mycodo.config import INFLUXDB_PORT
 from mycodo.config import INFLUXDB_USER
+from mycodo.config import INFLUX_CLIENT_TOKEN
+from mycodo.config import INFLUX_CLIENT_HOST
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
 from mycodo.config import PYRO_URI
 from mycodo.databases.models import Misc
 from mycodo.databases.models import SMTP
 from mycodo.utils.database import db_retrieve_table_daemon
 from mycodo.utils.send_data import send_email as send_email_notification
 from mycodo.utils.widget_generate_html import generate_widget_html
-
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -60,6 +62,7 @@ class DaemonControl:
     """
     Communicate with the daemon to execute commands or retrieve information.
     """
+
     def __init__(self, pyro_uri=PYRO_URI, pyro_timeout=None):
         self.pyro_timeout = 30
         try:
@@ -72,7 +75,7 @@ class DaemonControl:
             logger.exception(
                 "Could not access SQL table to determine Pyro Timeout. Using 30 seconds. Error: {}".format(e))
 
-        self.uri= pyro_uri
+        self.uri = pyro_uri
 
     def proxy(self):
         try:
@@ -297,6 +300,7 @@ class DaemonControl:
     def widget_execute(self, unique_id):
         return self.proxy().widget_execute(unique_id)
 
+
 def daemon_active():
     """ Used to determine if the daemon is reachable to communicate """
     try:
@@ -472,14 +476,15 @@ if __name__ == "__main__":
                 id=args.input_force_measurements, msg=return_msg[1]))
 
     elif args.get_measurement:
-        client = InfluxDBClient(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER,
-                                INFLUXDB_PASSWORD, INFLUXDB_DATABASE, timeout=5)
+        # client = InfluxDBClient(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER,
+        #                       INFLUXDB_PASSWORD, INFLUXDB_DATABASE, timeout=5)
+        client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
         query = "SELECT LAST(value) FROM {unit} " \
                 "WHERE device_id='{id}' " \
                 "AND channel='{channel}'".format(
-                    unit=args.get_measurement[1],
-                    id=args.get_measurement[0],
-                    channel=args.get_measurement[2])
+            unit=args.get_measurement[1],
+            id=args.get_measurement[0],
+            channel=args.get_measurement[2])
 
         try:
             last_measurement = client.query(query).raw
@@ -492,7 +497,7 @@ if __name__ == "__main__":
                 number = len(last_measurement['series'][0]['values'])
                 last_time = last_measurement['series'][0]['values'][number - 1][0]
                 last_measurement = last_measurement['series'][0]['values'][number - 1][1]
-                print("SUCCESS;{};{}".format(last_measurement,last_time))
+                print("SUCCESS;{};{}".format(last_measurement, last_time))
             except Exception:
                 logger.info("ERROR;Could not retrieve measurement.")
         else:
@@ -519,8 +524,9 @@ if __name__ == "__main__":
     elif args.output_currently_on:
         return_msg = daemon.output_sec_currently_on(
             args.output_currently_on, output_channel=args.output_channel)
-        logger.info("[Remote command] How many seconds output has been on. ID '{id}' CH{ch}: Server returned: {msg}".format(
-            id=args.output_currently_on, ch=args.output_channel, msg=return_msg))
+        logger.info(
+            "[Remote command] How many seconds output has been on. ID '{id}' CH{ch}: Server returned: {msg}".format(
+                id=args.output_currently_on, ch=args.output_channel, msg=return_msg))
 
     elif args.output_state and args.output_channel is None:
         parser.error("--output_state requires --output_channel")

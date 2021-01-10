@@ -6,8 +6,11 @@ import time
 from uuid import UUID
 
 import requests
-from influxdb import InfluxDBClient
 
+from mycodo.config import INFLUX_CLIENT_TOKEN
+from mycodo.config import INFLUX_CLIENT_HOST
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
 from mycodo.config import INFLUXDB_DATABASE
 from mycodo.config import INFLUXDB_HOST
 from mycodo.config import INFLUXDB_PASSWORD
@@ -278,9 +281,10 @@ def read_influxdb_function(
     :param end_str: End time, in influxdb format
     :type end_str: str
     """
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     query = query_string(
         unit,
@@ -352,9 +356,10 @@ def read_influxdb_list(unique_id, unit, channel,
     """
     raw_data = None
 
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     query = query_string(
         unit, unique_id,
@@ -418,9 +423,10 @@ def read_influxdb_single(unique_id, unit, channel,
     :param value: What kind of measurement to return (e.g. LAST, SUM, MIN, MAX, etc.)
     :type value: str
     """
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     query = query_string(
         unit,
@@ -482,8 +488,9 @@ def output_sec_on(output_id, past_seconds, output_channel=0):
     """ Return the number of seconds a output has been ON in the past number of seconds """
     # Get the number of seconds ON stored in the database
     output = db_retrieve_table_daemon(Output, unique_id=output_id)
-    client = InfluxDBClient(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER,
-                            INFLUXDB_PASSWORD, INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER,
+    #                         INFLUXDB_PASSWORD, INFLUXDB_DATABASE, timeout=5)
     if not output_id:
         return None
 
@@ -516,9 +523,10 @@ def output_sec_on(output_id, past_seconds, output_channel=0):
 
 def average_past_seconds(unique_id, unit, channel, past_seconds, measure=None):
     """Return measurement average for the past x seconds"""
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     query = query_string(
         unit, unique_id,
@@ -534,9 +542,10 @@ def average_past_seconds(unique_id, unit, channel, past_seconds, measure=None):
 
 def average_start_end_seconds(unique_id, unit, channel, str_start, str_end, measure=None):
     """Return measurement average for a period of time"""
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     query = query_string(
         unit, unique_id,
@@ -553,9 +562,10 @@ def average_start_end_seconds(unique_id, unit, channel, str_start, str_end, meas
 
 def sum_past_seconds(unique_id, unit, channel, past_seconds, measure=None):
     """Return measurement sum for the past x seconds"""
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     query = query_string(
         unit, unique_id,
@@ -629,9 +639,10 @@ def write_influxdb_value(
     :param timestamp: If supplied, this timestamp will be used in the influxdb
     :type timestamp: datetime object
     """
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     data = [
         format_influxdb_data(
@@ -681,9 +692,10 @@ def write_influxdb_list(data, unique_id):
         logger.debug("No data for ID {}. Not writing to influxdb".format(unique_id))
         return
 
-    client = InfluxDBClient(
-        INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
-        INFLUXDB_DATABASE, timeout=5)
+    client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # client = InfluxDBClient(
+    #     INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASSWORD,
+    #     INFLUXDB_DATABASE, timeout=5)
 
     try:
         client.write_points(data)

@@ -931,6 +931,9 @@ INFLUXDB_USER = 'mycodo'
 INFLUXDB_PASSWORD = 'mmdu77sj3nIoiajjs'
 INFLUXDB_DATABASE = 'mycodo_db'
 
+INFLUX_CLIENT_HOST = 'https://us-east-1-1.aws.cloud2.influxdata.com'
+INFLUX_CLIENT_TOKEN = ''
+
 # Anonymous statistics
 STATS_INTERVAL = 86400
 STATS_HOST = 'fungi.kylegabriel.com'

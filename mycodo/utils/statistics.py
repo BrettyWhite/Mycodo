@@ -11,8 +11,6 @@ import hashlib
 import os
 import requests
 import resource
-from influxdb import InfluxDBClient
-from influxdb.exceptions import InfluxDBServerError
 from sqlalchemy import func
 
 from mycodo.config import ID_FILE

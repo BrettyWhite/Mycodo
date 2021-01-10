@@ -12,7 +12,6 @@ import os
 import shutil
 from flask import send_file
 from flask import url_for
-from influxdb import InfluxDBClient
 from werkzeug.utils import secure_filename
 
 from mycodo.config import ALEMBIC_VERSION
@@ -338,71 +337,72 @@ def import_settings(form):
 
 
 def thread_import_influxdb(tmp_folder):
-    mycodo_db_backup = 'mycodo_db_bak'
-    client = InfluxDBClient(
-        INFLUXDB_HOST,
-        INFLUXDB_PORT,
-        INFLUXDB_USER,
-        INFLUXDB_PASSWORD,
-        mycodo_db_backup)
-
-    # Delete any backup database that may exist (can't copy over a current db)
-    try:
-        client.drop_database(mycodo_db_backup)
-    except Exception as msg:
-        print("Error while deleting db prior to restore: {}".format(msg))
-
-    # Restore the backup to new database mycodo_db_bak
-    try:
-        logger.info("Creating tmp db with restore data")
-        command = "{pth}/mycodo/scripts/mycodo_wrapper " \
-                  "influxdb_restore_mycodo_db {dir}".format(
-            pth=INSTALL_DIRECTORY, dir=tmp_folder)
-        cmd = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            shell=True)
-        cmd_out, cmd_err = cmd.communicate()
-        cmd_status = cmd.wait()
-        logger.info("command output: {}\nErrors: {}\nStatus: {}".format(
-            cmd_out.decode('utf-8'), cmd_err, cmd_status))
-    except Exception as msg:
-        logger.info("Error during restore of data to backup db: {}".format(msg))
-
-    # Copy all measurements from backup to current database
-    try:
-        logger.info("Beginning restore of data from tmp db to main db. This could take a while...")
-        query_str = "SELECT * INTO {}..:MEASUREMENT FROM /.*/ GROUP BY *".format(
-            INFLUXDB_DATABASE)
-        client.query(query_str)
-        logger.info("Restore of data from tmp db complete.")
-    except Exception as msg:
-        logger.info("Error during copy of measurements from backup db to production db: {}".format(msg))
-
-    # Delete backup database
-    try:
-        logger.info("Deleting tmp db")
-        client.drop_database(mycodo_db_backup)
-    except Exception as msg:
-        logger.info("Error while deleting db after restore: {}".format(msg))
-
-    # Delete tmp directory if it exists
-    try:
-        logger.info("Deleting influxdb restore tmp directory...")
-        command = "{pth}/mycodo/scripts/mycodo_wrapper " \
-                  "influxdb_delete_restore_tmp_dir {dir}".format(
-            pth=INSTALL_DIRECTORY, dir=tmp_folder)
-        cmd = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            shell=True)
-        cmd_out, cmd_err = cmd.communicate()
-        cmd_status = cmd.wait()
-        logger.info("Command output: {}\nErrors: {}\nStatus: {}".format(
-            cmd_out.decode('utf-8'), cmd_err, cmd_status))
-    except Exception as msg:
-        logger.info("Error while deleting tmp file directory: {}".format(msg))
-
+    pass
+    # mycodo_db_backup = 'mycodo_db_bak'
+    # client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    # # client = InfluxDBClient(
+    # #     INFLUXDB_HOST,
+    # #     INFLUXDB_PORT,
+    # #     INFLUXDB_USER,
+    # #     INFLUXDB_PASSWORD,
+    # #     mycodo_db_backup)
+    # # Delete any backup database that may exist (can't copy over a current db)
+    # try:
+    #     client.drp(mycodo_db_backup)
+    # except Exception as msg:
+    #     print("Error while deleting db prior to restore: {}".format(msg))
+    #
+    # # Restore the backup to new database mycodo_db_bak
+    # try:
+    #     logger.info("Creating tmp db with restore data")
+    #     command = "{pth}/mycodo/scripts/mycodo_wrapper " \
+    #               "influxdb_restore_mycodo_db {dir}".format(
+    #         pth=INSTALL_DIRECTORY, dir=tmp_folder)
+    #     cmd = subprocess.Popen(
+    #         command,
+    #         stdout=subprocess.PIPE,
+    #         shell=True)
+    #     cmd_out, cmd_err = cmd.communicate()
+    #     cmd_status = cmd.wait()
+    #     logger.info("command output: {}\nErrors: {}\nStatus: {}".format(
+    #         cmd_out.decode('utf-8'), cmd_err, cmd_status))
+    # except Exception as msg:
+    #     logger.info("Error during restore of data to backup db: {}".format(msg))
+    #
+    # # Copy all measurements from backup to current database
+    # try:
+    #     logger.info("Beginning restore of data from tmp db to main db. This could take a while...")
+    #     query_str = "SELECT * INTO {}..:MEASUREMENT FROM /.*/ GROUP BY *".format(
+    #         INFLUXDB_DATABASE)
+    #     client.query(query_str)
+    #     logger.info("Restore of data from tmp db complete.")
+    # except Exception as msg:
+    #     logger.info("Error during copy of measurements from backup db to production db: {}".format(msg))
+    #
+    # # Delete backup database
+    # try:
+    #     logger.info("Deleting tmp db")
+    #     client.drop_database(mycodo_db_backup)
+    # except Exception as msg:
+    #     logger.info("Error while deleting db after restore: {}".format(msg))
+    #
+    # # Delete tmp directory if it exists
+    # try:
+    #     logger.info("Deleting influxdb restore tmp directory...")
+    #     command = "{pth}/mycodo/scripts/mycodo_wrapper " \
+    #               "influxdb_delete_restore_tmp_dir {dir}".format(
+    #         pth=INSTALL_DIRECTORY, dir=tmp_folder)
+    #     cmd = subprocess.Popen(
+    #         command,
+    #         stdout=subprocess.PIPE,
+    #         shell=True)
+    #     cmd_out, cmd_err = cmd.communicate()
+    #     cmd_status = cmd.wait()
+    #     logger.info("Command output: {}\nErrors: {}\nStatus: {}".format(
+    #         cmd_out.decode('utf-8'), cmd_err, cmd_status))
+    # except Exception as msg:
+    #     logger.info("Error while deleting tmp file directory: {}".format(msg))
+    #
 
 def import_influxdb(form):
     """
