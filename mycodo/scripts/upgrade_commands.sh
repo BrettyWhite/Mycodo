@@ -366,39 +366,39 @@ case "${1:-''}" in
             /bin/bash "${MYCODO_PATH}"/mycodo/scripts/upgrade_commands.sh enable-pigpiod-low
         fi
     ;;
-    'update-influxdb')
-        printf "\n#### Ensuring compatible version of influxdb is installed ####\n"
-        INSTALL_ADDRESS="https://dl.influxdata.com/influxdb/releases/"
-        INSTALL_FILE="influxdb_${INFLUXDB_VERSION}_armhf.deb"
-        CORRECT_VERSION="${INFLUXDB_VERSION}-1"
-        CURRENT_VERSION=$(apt-cache policy influxdb | grep 'Installed' | gawk '{print $2}')
-        if [[ "${CURRENT_VERSION}" != "${CORRECT_VERSION}" ]]; then
-            echo "#### Incorrect InfluxDB version (v${CURRENT_VERSION}) installed. Installing v${CORRECT_VERSION}..."
-            wget --quiet ${INSTALL_ADDRESS}${INSTALL_FILE}
-            dpkg -i ${INSTALL_FILE}
-            rm -rf ${INSTALL_FILE}
-            service influxdb restart
-        else
-            printf "Correct version of InfluxDB currently installed\n"
-        fi
-    ;;
-    'update-influxdb-db-user')
-        printf "\n#### Creating InfluxDB database and user\n"
-        # Attempt to connect to influxdb 10 times, sleeping 60 seconds every fail
-        for _ in {1..10}; do
-            # Check if influxdb has successfully started and be connected to
-            printf "#### Attempting to connect...\n" &&
-            curl -sL -I localhost:8086/ping > /dev/null &&
-            influx -execute "CREATE DATABASE mycodo_db" &&
-            influx -database mycodo_db -execute "CREATE USER mycodo WITH PASSWORD 'mmdu77sj3nIoiajjs'" &&
-            printf "#### Influxdb database and user successfully created\n" &&
-            break ||
-            # Else wait 60 seconds if the influxd port is not accepting connections
-            # Everything below will begin executing if an error occurs before the break
-            printf "#### Could not connect to Influxdb. Waiting 30 seconds then trying again...\n" &&
-            sleep 60
-        done
-    ;;
+#    'update-influxdb')
+#        printf "\n#### Ensuring compatible version of influxdb is installed ####\n"
+#        INSTALL_ADDRESS="https://dl.influxdata.com/influxdb/releases/"
+#        INSTALL_FILE="influxdb_${INFLUXDB_VERSION}_armhf.deb"
+#        CORRECT_VERSION="${INFLUXDB_VERSION}-1"
+#        CURRENT_VERSION=$(apt-cache policy influxdb | grep 'Installed' | gawk '{print $2}')
+#        if [[ "${CURRENT_VERSION}" != "${CORRECT_VERSION}" ]]; then
+#            echo "#### Incorrect InfluxDB version (v${CURRENT_VERSION}) installed. Installing v${CORRECT_VERSION}..."
+#            wget --quiet ${INSTALL_ADDRESS}${INSTALL_FILE}
+#            dpkg -i ${INSTALL_FILE}
+#            rm -rf ${INSTALL_FILE}
+#            service influxdb restart
+#        else
+#            printf "Correct version of InfluxDB currently installed\n"
+#        fi
+#    ;;
+#    'update-influxdb-db-user')
+#        printf "\n#### Creating InfluxDB database and user\n"
+#        # Attempt to connect to influxdb 10 times, sleeping 60 seconds every fail
+#        for _ in {1..10}; do
+#            # Check if influxdb has successfully started and be connected to
+#            printf "#### Attempting to connect...\n" &&
+#            curl -sL -I localhost:8086/ping > /dev/null &&
+#            influx -execute "CREATE DATABASE mycodo_db" &&
+#            influx -database mycodo_db -execute "CREATE USER mycodo WITH PASSWORD 'mmdu77sj3nIoiajjs'" &&
+#            printf "#### Influxdb database and user successfully created\n" &&
+#            break ||
+#            # Else wait 60 seconds if the influxd port is not accepting connections
+#            # Everything below will begin executing if an error occurs before the break
+#            printf "#### Could not connect to Influxdb. Waiting 30 seconds then trying again...\n" &&
+#            sleep 60
+#        done
+#    ;;
     'update-logrotate')
         printf "\n#### Installing logrotate scripts\n"
         if [[ -e /etc/cron.daily/logrotate ]]; then
