@@ -21,16 +21,12 @@ from flask_babel import gettext
 from flask_limiter import Limiter
 from mycodo.config import INFLUX_CLIENT_TOKEN
 from mycodo.config import INFLUX_CLIENT_HOST
-from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
+from mycodo.config import INFLUX_BUCKET
+from mycodo.config import INFLUX_ORG
+from influxdb_client import InfluxDBClient
 from sqlalchemy import and_
 
 from mycodo.config import DOCKER_CONTAINER
-from mycodo.config import INFLUXDB_DATABASE
-from mycodo.config import INFLUXDB_HOST
-from mycodo.config import INFLUXDB_PASSWORD
-from mycodo.config import INFLUXDB_PORT
-from mycodo.config import INFLUXDB_USER
 from mycodo.config import INSTALL_DIRECTORY
 from mycodo.config import LOG_PATH
 from mycodo.config import PATH_CAMERAS
@@ -304,7 +300,7 @@ def last_data(unique_id, measure_type, measurement_id, period):
             if query_str == 1:
                 return '', 204
 
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
             number = len(raw_data['series'][0]['values'])
             time_raw = raw_data['series'][0]['values'][number - 1][0]
@@ -399,7 +395,7 @@ def past_data(unique_id, measure_type, measurement_id, past_seconds):
             if query_str == 1:
                 return '', 204
 
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
             if 'series' in raw_data and raw_data['series']:
                 return jsonify(raw_data['series'][0]['values'])
@@ -453,7 +449,7 @@ def generate_thermal_image_from_timestamp(unique_id, timestamp):
             logger.error('Invalid query string')
             success = False
         else:
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
             if not raw_data or 'series' not in raw_data or not raw_data['series']:
                 logger.error('No measurements to export in this time period')
                 success = False
@@ -522,7 +518,7 @@ def export_data(unique_id, measurement_id, start_seconds, end_seconds):
     if query_str == 1:
         flash('Invalid query string', 'error')
         return redirect(url_for('routes_page.page_export'))
-    raw_data = dbcon.query(query_str).raw
+    raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
     if not raw_data or 'series' not in raw_data or not raw_data['series']:
         flash('No measurements to export in this time period', 'error')
@@ -624,7 +620,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         count_points = raw_data['series'][0]['values'][0][1]
         # Get the timestamp of the first point in the past year
@@ -636,7 +632,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         first_point = raw_data['series'][0]['values'][0][0]
         end = datetime.datetime.utcnow()
@@ -658,7 +654,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         count_points = raw_data['series'][0]['values'][0][1]
         # Get the timestamp of the first point in the past year
@@ -673,7 +669,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         first_point = raw_data['series'][0]['values'][0][0]
     else:
@@ -692,7 +688,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         count_points = raw_data['series'][0]['values'][0][1]
         # Get the timestamp of the first point in the past year
@@ -707,7 +703,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         first_point = raw_data['series'][0]['values'][0][0]
 
@@ -747,7 +743,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
             if query_str == 1:
                 return '', 204
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
             return jsonify(raw_data['series'][0]['values'])
         except Exception as e:
@@ -765,7 +761,7 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
 
             if query_str == 1:
                 return '', 204
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
             return jsonify(raw_data['series'][0]['values'])
         except Exception as e:
@@ -799,7 +795,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         count_points = raw_data['series'][0]['values'][0][1]
         # Get the timestamp of the first point in the past year
@@ -810,7 +806,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         first_point = raw_data['series'][0]['values'][0][0]
         end = datetime.datetime.utcnow()
@@ -831,7 +827,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         count_points = raw_data['series'][0]['values'][0][1]
         # Get the timestamp of the first point in the past year
@@ -845,7 +841,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         first_point = raw_data['series'][0]['values'][0][0]
     else:
@@ -863,7 +859,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         count_points = raw_data['series'][0]['values'][0][1]
         # Get the timestamp of the first point in the past year
@@ -877,7 +873,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
         if query_str == 1:
             return '', 204
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
         first_point = raw_data['series'][0]['values'][0][0]
 
@@ -916,7 +912,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
             if query_str == 1:
                 return '', 204
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
             return jsonify(raw_data['series'][0]['values'])
         except Exception as e:
@@ -933,7 +929,7 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
 
             if query_str == 1:
                 return '', 204
-            raw_data = dbcon.query(query_str).raw
+            raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
 
             return jsonify(raw_data['series'][0]['values'])
         except Exception as e:
@@ -1065,7 +1061,7 @@ def return_point_timestamp(dev_id, unit, period, measurement=None, channel=None)
         return [None, None]
 
     try:
-        raw_data = dbcon.query(query_str).raw
+        raw_data = dbcon.query_api().query(query_str, org=INFLUX_ORG).raw
         number = len(raw_data['series'][0]['values'])
         time_raw = raw_data['series'][0]['values'][number - 1][0]
         value = raw_data['series'][0]['values'][number - 1][1]
