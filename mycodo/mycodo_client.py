@@ -34,15 +34,10 @@ from Pyro5.api import Proxy
 
 sys.path.append(os.path.abspath(os.path.join(os.path.realpath(__file__), '../..')))
 
-from mycodo.config import INFLUXDB_DATABASE
-from mycodo.config import INFLUXDB_HOST
-from mycodo.config import INFLUXDB_PASSWORD
-from mycodo.config import INFLUXDB_PORT
-from mycodo.config import INFLUXDB_USER
+
 from mycodo.config import INFLUX_CLIENT_TOKEN
 from mycodo.config import INFLUX_CLIENT_HOST
-from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client import InfluxDBClient
 from mycodo.config import PYRO_URI
 from mycodo.databases.models import Misc
 from mycodo.databases.models import SMTP
@@ -487,7 +482,7 @@ if __name__ == "__main__":
             channel=args.get_measurement[2])
 
         try:
-            last_measurement = client.query(query).raw
+            last_measurement = client.query_api().query(query).raw
         except requests.exceptions.ConnectionError:
             logger.debug("ERROR: Failed to establish a new influxdb connection. Ensure influxdb is running.")
             last_measurement = None

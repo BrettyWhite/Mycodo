@@ -9,13 +9,7 @@ import requests
 
 from mycodo.config import INFLUX_CLIENT_TOKEN
 from mycodo.config import INFLUX_CLIENT_HOST
-from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
-from mycodo.config import INFLUXDB_DATABASE
-from mycodo.config import INFLUXDB_HOST
-from mycodo.config import INFLUXDB_PASSWORD
-from mycodo.config import INFLUXDB_PORT
-from mycodo.config import INFLUXDB_USER
+from influxdb_client import InfluxDBClient
 from mycodo.databases.models import Output
 from mycodo.inputs.sensorutils import convert_units
 from mycodo.mycodo_client import DaemonControl
@@ -300,14 +294,14 @@ def read_influxdb_function(
         return '', 204
 
     try:
-        last_measurement = client.query(query).raw
+        last_measurement = client.query_api().query(query).raw
     except requests.exceptions.ConnectionError:
         logger.debug(
             "Could not read form influxdb for ID {}, channel {}. "
             "waiting 15 seconds and trying again.".format(unique_id, channel))
         time.sleep(15)
         try:
-            last_measurement = client.query(query).raw
+            last_measurement = client.query_api().query(query).raw
         except requests.exceptions.ConnectionError:
             logger.debug("Failed to establish a new influxdb connection. Ensure influxdb is running.")
             last_measurement = None
@@ -373,14 +367,14 @@ def read_influxdb_list(unique_id, unit, channel,
         return '', 204
 
     try:
-        raw_data = client.query(query).raw
+        raw_data = client.query_api().query(query).raw
     except:
         logger.debug(
             "Could not read form influxdb for ID {}, channel {}. "
             "waiting 15 seconds and trying again.".format(unique_id, channel))
         time.sleep(15)
         try:
-            raw_data = client.query(query).raw
+            raw_data = client.query_api().query(query).raw
         except:
             logger.debug("Could not read form influxdb after waiting 15 seconds.")
 
@@ -442,14 +436,14 @@ def read_influxdb_single(unique_id, unit, channel,
         return '', 204
 
     try:
-        last_measurement = client.query(query).raw
+        last_measurement = client.query_api().query(query).raw
     except requests.exceptions.ConnectionError:
         logger.debug(
             "Could not read form influxdb for ID {}, channel {}. "
             "waiting 15 seconds and trying again.".format(unique_id, channel))
         time.sleep(15)
         try:
-            last_measurement = client.query(query).raw
+            last_measurement = client.query_api().query(query).raw
         except requests.exceptions.ConnectionError:
             logger.debug("Failed to establish a new influxdb connection. Ensure influxdb is running.")
             last_measurement = None
@@ -509,7 +503,7 @@ def output_sec_on(output_id, past_seconds, output_channel=0):
                          channel=output_channel,
                          value='SUM',
                          past_sec=past_seconds)
-    query_output = client.query(query)
+    query_output = client.query_api().query(query)
     sec_recorded_on = 0
     if query_output:
         sec_recorded_on = query_output.raw['series'][0]['values'][0][1]
@@ -534,7 +528,7 @@ def average_past_seconds(unique_id, unit, channel, past_seconds, measure=None):
         channel=channel,
         value='MEAN',
         past_sec=past_seconds)
-    query_output = client.query(query)
+    query_output = client.query_api().query(query)
 
     if query_output:
         return query_output.raw['series'][0]['values'][0][1]
@@ -554,7 +548,7 @@ def average_start_end_seconds(unique_id, unit, channel, str_start, str_end, meas
         value='MEAN',
         start_str=str_start,
         end_str=str_end)
-    query_output = client.query(query)
+    query_output = client.query_api().query(query)
 
     if query_output:
         return query_output.raw['series'][0]['values'][0][1]
@@ -573,7 +567,7 @@ def sum_past_seconds(unique_id, unit, channel, past_seconds, measure=None):
         channel=channel,
         value='SUM',
         past_sec=past_seconds)
-    query_output = client.query(query)
+    query_output = client.query_api().query(query)
 
     if query_output:
         return query_output.raw['series'][0]['values'][0][1]
@@ -653,14 +647,14 @@ def write_influxdb_value(
     ]
 
     try:
-        client.write_points(data)
+        client.write_api(data)
         return 0
     except Exception as except_msg:
         logger.debug("Failed to write measurements to influxdb with ID {}. "
                      "Retrying in 30 seconds.".format(unique_id))
         time.sleep(30)
         try:
-            client.write_points(data)
+            client.write_api(data)
             logger.debug("Successfully wrote measurements to influxdb after "
                          "30-second wait.")
             return 0
@@ -698,14 +692,14 @@ def write_influxdb_list(data, unique_id):
     #     INFLUXDB_DATABASE, timeout=5)
 
     try:
-        client.write_points(data)
+        client.write_api(data)
         return 0
     except Exception as e:
         logger.debug("Failed to write measurements to influxdb: {} "
                      "Retrying in 30 seconds. Data: {}".format(e, data))
         time.sleep(30)
         try:
-            client.write_points(data)
+            client.write_api(data)
             logger.debug("Successfully wrote measurements to influxdb after "
                          "30-second wait. Data: {}".format(data))
             return 0
