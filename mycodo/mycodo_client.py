@@ -37,6 +37,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.realpath(__file__), '../..'
 
 from mycodo.config import INFLUX_CLIENT_TOKEN
 from mycodo.config import INFLUX_CLIENT_HOST
+from mycodo.config import INFLUX_ORG
 from influxdb_client import InfluxDBClient
 from mycodo.config import PYRO_URI
 from mycodo.databases.models import Misc
@@ -473,7 +474,11 @@ if __name__ == "__main__":
     elif args.get_measurement:
         # client = InfluxDBClient(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER,
         #                       INFLUXDB_PASSWORD, INFLUXDB_DATABASE, timeout=5)
-        client = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+        client = InfluxDBClient(
+            url=INFLUX_CLIENT_HOST,
+            token=INFLUX_CLIENT_TOKEN,
+            org=INFLUX_ORG
+        )
         query = "SELECT LAST(value) FROM {unit} " \
                 "WHERE device_id='{id}' " \
                 "AND channel='{channel}'".format(

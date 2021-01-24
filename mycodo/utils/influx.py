@@ -732,6 +732,7 @@ def write_influxdb_list(data, unique_id):
     try:
         write_api = client.write_api(write_options=SYNCHRONOUS)
         write_api.write(INFLUX_BUCKET, INFLUX_ORG, data)
+        logger.debug("Wrote Data to Influx: {}".format(data))
         return 0
     except Exception as e:
         logger.debug("Failed to write measurements to influxdb: {} "

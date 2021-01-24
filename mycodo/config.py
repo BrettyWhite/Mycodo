@@ -933,6 +933,8 @@ INFLUXDB_DATABASE = 'mycodo_db'
 
 INFLUX_CLIENT_HOST = 'https://us-east-1-1.aws.cloud2.influxdata.com'
 INFLUX_CLIENT_TOKEN = ''
+INFLUX_ORG = "geekman3454@protonmail.com"
+INFLUX_BUCKET = "mycodo_db"
 
 # Anonymous statistics
 STATS_INTERVAL = 86400

@@ -252,7 +252,11 @@ def last_data(unique_id, measure_type, measurement_id, period):
         return '', 204
 
     if measure_type in ['input', 'math', 'output', 'pid']:
-        dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+        dbcon = InfluxDBClient(
+            url=INFLUX_CLIENT_HOST,
+            token=INFLUX_CLIENT_TOKEN,
+            org=INFLUX_ORG
+        )
         # dbcon = InfluxDBClient(
         #     INFLUXDB_HOST,
         #     INFLUXDB_PORT,
@@ -348,7 +352,11 @@ def past_data(unique_id, measure_type, measurement_id, past_seconds):
             return '', 204
 
     elif measure_type in ['input', 'math', 'output', 'pid']:
-        dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+        dbcon = InfluxDBClient(
+            url=INFLUX_CLIENT_HOST,
+            token=INFLUX_CLIENT_TOKEN,
+            org=INFLUX_ORG
+        )
         # dbcon = InfluxDBClient(
         #     INFLUXDB_HOST,
         #     INFLUXDB_PORT,
@@ -427,7 +435,11 @@ def generate_thermal_image_from_timestamp(unique_id, timestamp):
     #     INFLUXDB_USER,
     #     INFLUXDB_PASSWORD,
     #     INFLUXDB_DATABASE)
-    dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    dbcon = InfluxDBClient(
+        url=INFLUX_CLIENT_HOST,
+        token=INFLUX_CLIENT_TOKEN,
+        org=INFLUX_ORG
+    )
 
     input_dev = Input.query.filter(Input.unique_id == unique_id).first()
     pixels = []
@@ -478,7 +490,11 @@ def export_data(unique_id, measurement_id, start_seconds, end_seconds):
     #     INFLUXDB_USER,
     #     INFLUXDB_PASSWORD,
     #     INFLUXDB_DATABASE, timeout=100)
-    dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN, None, 100)
+    dbcon = InfluxDBClient(
+        url=INFLUX_CLIENT_HOST,
+        token=INFLUX_CLIENT_TOKEN,
+        org=INFLUX_ORG
+    ).timeout(100)
 
     output = Output.query.filter(Output.unique_id == unique_id).first()
     input_dev = Input.query.filter(Input.unique_id == unique_id).first()
@@ -590,7 +606,11 @@ def async_data(device_id, device_type, measurement_id, start_seconds, end_second
     #     INFLUXDB_USER,
     #     INFLUXDB_PASSWORD,
     #     INFLUXDB_DATABASE)
-    dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    dbcon = InfluxDBClient(
+        url=INFLUX_CLIENT_HOST,
+        token=INFLUX_CLIENT_TOKEN,
+        org=INFLUX_ORG
+    )
 
     if device_type in ['input', 'math', 'output', 'pid']:
         measure = DeviceMeasurements.query.filter(
@@ -777,7 +797,11 @@ def async_usage_data(device_id, unit, channel, start_seconds, end_seconds):
     Return data from start_seconds to end_seconds from influxdb.
     Used for asynchronous energy usage display of many points (up to millions).
     """
-    dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    dbcon = InfluxDBClient(
+        url=INFLUX_CLIENT_HOST,
+        token=INFLUX_CLIENT_TOKEN,
+        org=INFLUX_ORG
+    )
     # dbcon = InfluxDBClient(
     #     INFLUXDB_HOST,
     #     INFLUXDB_PORT,
@@ -1042,7 +1066,11 @@ def computer_command(action):
 #
 
 def return_point_timestamp(dev_id, unit, period, measurement=None, channel=None):
-    dbcon = InfluxDBClient(INFLUX_CLIENT_HOST, INFLUX_CLIENT_TOKEN)
+    dbcon = InfluxDBClient(
+        url=INFLUX_CLIENT_HOST,
+        token=INFLUX_CLIENT_TOKEN,
+        org=INFLUX_ORG
+    )
     # dbcon = InfluxDBClient(
     #     INFLUXDB_HOST,
     #     INFLUXDB_PORT,
